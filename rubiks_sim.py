@@ -46,12 +46,12 @@ class Cube:
         self.right_face = Poly3DCollection(verts_0, facecolors=self.colors['right'])
         self.top_face = Poly3DCollection(verts_0, facecolors=self.colors['top'])
         self.bottom_face = Poly3DCollection(verts_0, facecolors=self.colors['bottom'])
-        self.ax.add_collection3d(self.front_face, zs='z')
-        self.ax.add_collection3d(self.back_face, zs='z')
-        self.ax.add_collection3d(self.left_face, zs='z')
-        self.ax.add_collection3d(self.right_face, zs='z')
-        self.ax.add_collection3d(self.top_face, zs='z')
-        self.ax.add_collection3d(self.bottom_face, zs='z')
+        self.ax.add_collection3d(self.front_face)
+        self.ax.add_collection3d(self.back_face)
+        self.ax.add_collection3d(self.left_face)
+        self.ax.add_collection3d(self.right_face)
+        self.ax.add_collection3d(self.top_face)
+        self.ax.add_collection3d(self.bottom_face)
 
         #set radius (relative to center of face) (1 for edge pieces, sqrt(2) for corners)
         rads = np.array([self.x-1, self.y-1, self.z-1]) #better name
