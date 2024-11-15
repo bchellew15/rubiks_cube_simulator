@@ -7,9 +7,12 @@ Author: Blake Chellew
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import numpy as np
 from matplotlib.widgets import Button
 import queue
+import time
+import threading
 
 #Cube class: each of the 26 smaller cubes is an instance of this class
 class Cube:
@@ -64,7 +67,8 @@ class Cube:
             self.r = np.sqrt(2)
 
     #update the position of the cube's vertices
-    def display(self):
+    def update_position(self):
+
         if self.thy != 0:
             #front face
             xs = [self.x+(np.sqrt(2)/2)*np.cos(5*np.pi/4 + self.thy), self.x+(np.sqrt(2)/2)*np.cos(3*np.pi/4 + self.thy), \
@@ -211,12 +215,11 @@ class Cube:
         self.top_face.set_facecolor(self.colors['top'])
         self.bottom_face.set_facecolor(self.colors['bottom'])
         self.left_face.set_facecolor(self.colors['left'])
-        self.right_face.set_facecolor(self.colors['right'])  
-
+        self.right_face.set_facecolor(self.colors['right'])
         
 class Rubiks:
     def __init__(self):
-        self.num_frames = 10 #frames per face rotation
+        self.num_frames = 10 #frames per face
         self.fig = plt.figure()
         self.ax = Axes3D(self.fig)
         self.ax.view_init(elev=20, azim=240) #initialize viewing angle
@@ -225,6 +228,7 @@ class Rubiks:
         self.ax.set_ylim(-1, 3)
         self.ax.set_zlim(-1, 3)
         plt.axis("off")
+        ani = None
         #self.ax.set_xlabel("x")
         #self.ax.set_ylabel("y")
         #self.ax.set_zlabel("z")
@@ -319,390 +323,447 @@ class Rubiks:
             c.thy = 0
             c.thz = 0
 
-    #call display function on each of the smaller cubes
-    def display(self):
+    #call update_cube_positions function on each of the smaller cubes
+    def update_cube_positions(self):
         for c in self.cubes:
-            c.display()
-        plt.pause(0.001)
+            c.update_position()
+
+    def F_helper(self, *fargs):
+        i = fargs[0] + 1
+        cw = fargs[1]
+        cubes = fargs[2]
+
+        d_th = i * np.pi / (2 * self.num_frames)
+        if cw == 1:
+            d_th = -d_th
+        for c in cubes:
+            try:
+                if c.z0 > 0:
+                    angle = np.arccos((c.x0 - 1) / c.r) + d_th
+                else:
+                    angle = -np.arccos((c.x0 - 1) / c.r) + d_th
+                c.x = 1 + c.r * np.cos(angle)
+                c.z = 1 + c.r * np.sin(angle)
+            except:  # happens when r = 0:
+                pass
+            c.thy = d_th
+        self.update_cube_positions()
+
+        if i == self.num_frames:  # last frame. update colors and reset
+            if cw == 1:  # clockwise
+                for c in cubes:
+                    temp = c.colors['right']
+                    c.colors['right'] = c.colors['top']
+                    c.colors['top'] = c.colors['left']
+                    c.colors['left'] = c.colors['bottom']
+                    c.colors['bottom'] = temp
+                # corners
+                temp = self.cubes[6].colors
+                self.cubes[6].colors = self.cubes[0].colors
+                self.cubes[0].colors = self.cubes[2].colors
+                self.cubes[2].colors = self.cubes[8].colors
+                self.cubes[8].colors = temp
+                # edges
+                temp = self.cubes[7].colors
+                self.cubes[7].colors = self.cubes[3].colors
+                self.cubes[3].colors = self.cubes[1].colors
+                self.cubes[1].colors = self.cubes[5].colors
+                self.cubes[5].colors = temp
+            else:  # counter-clockwise
+                for c in cubes:
+                    temp = c.colors['right']
+                    c.colors['right'] = c.colors['bottom']
+                    c.colors['bottom'] = c.colors['left']
+                    c.colors['left'] = c.colors['top']
+                    c.colors['top'] = temp
+                # corners
+                temp = self.cubes[6].colors
+                self.cubes[6].colors = self.cubes[8].colors
+                self.cubes[8].colors = self.cubes[2].colors
+                self.cubes[2].colors = self.cubes[0].colors
+                self.cubes[0].colors = temp
+                # edges
+                temp = self.cubes[7].colors
+                self.cubes[7].colors = self.cubes[5].colors
+                self.cubes[5].colors = self.cubes[1].colors
+                self.cubes[1].colors = self.cubes[3].colors
+                self.cubes[3].colors = temp
+            self.reset()
+            self.busy = 0
 
     #rotate front face
     def F(self, cw = 1):
         self.busy = 1
         ind = [0, 1, 2, 3, 4, 5, 6, 7, 8]
         cubes = self.cubes[ind]
-        #display frames
-        for i in range(1, self.num_frames+1):
-            d_th = i*np.pi/(2*self.num_frames)
-            if cw == 1:
-                d_th = -d_th
-            for c in cubes:
-                try:
-                    if c.z0 > 0:
-                        angle = np.arccos((c.x0-1)/c.r) + d_th    
-                    else:
-                        angle = -np.arccos((c.x0-1)/c.r) + d_th
-                    c.x = 1 + c.r*np.cos(angle)
-                    c.z = 1 + c.r*np.sin(angle) 
-                except: #happens when r = 0:
-                    pass
-                c.thy = d_th
-            self.display()
-        #update colors and reset
-        if cw == 1: #clockwise
-            for c in cubes:
-                temp = c.colors['right']
-                c.colors['right'] = c.colors['top']
-                c.colors['top'] = c.colors['left']
-                c.colors['left'] = c.colors['bottom']
-                c.colors['bottom'] = temp
-            #corners
-            temp = self.cubes[6].colors
-            self.cubes[6].colors = self.cubes[0].colors
-            self.cubes[0].colors = self.cubes[2].colors
-            self.cubes[2].colors = self.cubes[8].colors
-            self.cubes[8].colors = temp
-            #edges
-            temp = self.cubes[7].colors
-            self.cubes[7].colors = self.cubes[3].colors
-            self.cubes[3].colors = self.cubes[1].colors
-            self.cubes[1].colors = self.cubes[5].colors
-            self.cubes[5].colors = temp
-        else: #counter-clockwise
-            for c in cubes:
-                temp = c.colors['right']
-                c.colors['right'] = c.colors['bottom']
-                c.colors['bottom'] = c.colors['left']
-                c.colors['left'] = c.colors['top']
-                c.colors['top'] = temp
-            #corners
-            temp = self.cubes[6].colors
-            self.cubes[6].colors = self.cubes[8].colors
-            self.cubes[8].colors = self.cubes[2].colors
-            self.cubes[2].colors = self.cubes[0].colors
-            self.cubes[0].colors = temp
-            #edges
-            temp = self.cubes[7].colors
-            self.cubes[7].colors = self.cubes[5].colors
-            self.cubes[5].colors = self.cubes[1].colors
-            self.cubes[1].colors = self.cubes[3].colors
-            self.cubes[3].colors = temp
-        self.reset()
-        self.busy = 0
+
+        # animation
+        self.ani = animation.FuncAnimation(self.fig, self.F_helper, fargs = [cw, cubes], frames=self.num_frames, repeat=False, interval=1)
+
+    def R_helper(self, *fargs):
+        i = fargs[0] + 1
+        cw = fargs[1]
+        cubes = fargs[2]
+
+        d_th = i * np.pi / (2 * self.num_frames)
+        if cw == 1:
+            d_th = -d_th
+        for c in cubes:
+            try:
+                if c.z0 > 0:
+                    angle = np.arccos((c.y0 - 1) / c.r) + d_th
+                else:
+                    angle = -np.arccos((c.y0 - 1) / c.r) + d_th
+                c.y = 1 + c.r * np.cos(angle)
+                c.z = 1 + c.r * np.sin(angle)
+            except:  # happens when r = 0
+                pass
+            c.thx = d_th
+        self.update_cube_positions()
+
+        if i == self.num_frames:  # last frame. update colors and reset
+            if cw == 1:  # clockwise
+                for c in cubes:
+                    temp = c.colors['front']
+                    c.colors['front'] = c.colors['bottom']
+                    c.colors['bottom'] = c.colors['back']
+                    c.colors['back'] = c.colors['top']
+                    c.colors['top'] = temp
+                # corners
+                temp = self.cubes[8].colors
+                self.cubes[8].colors = self.cubes[2].colors
+                self.cubes[2].colors = self.cubes[19].colors
+                self.cubes[19].colors = self.cubes[25].colors
+                self.cubes[25].colors = temp
+                # edges
+                temp = self.cubes[16].colors
+                self.cubes[16].colors = self.cubes[5].colors
+                self.cubes[5].colors = self.cubes[11].colors
+                self.cubes[11].colors = self.cubes[22].colors
+                self.cubes[22].colors = temp
+            else:  # counter-clockwise
+                for c in cubes:
+                    temp = c.colors['front']
+                    c.colors['front'] = c.colors['top']
+                    c.colors['top'] = c.colors['back']
+                    c.colors['back'] = c.colors['bottom']
+                    c.colors['bottom'] = temp
+                # corners
+                temp = self.cubes[8].colors
+                self.cubes[8].colors = self.cubes[25].colors
+                self.cubes[25].colors = self.cubes[19].colors
+                self.cubes[19].colors = self.cubes[2].colors
+                self.cubes[2].colors = temp
+                # edges
+                temp = self.cubes[16].colors
+                self.cubes[16].colors = self.cubes[22].colors
+                self.cubes[22].colors = self.cubes[11].colors
+                self.cubes[11].colors = self.cubes[5].colors
+                self.cubes[5].colors = temp
+            self.reset()
+            self.busy = 0
 
     #rotate right face
     def R(self, cw = 1):
         self.busy = 1
         ind = [2, 5, 8, 11, 13, 16, 19, 22, 25]
         cubes = self.cubes[ind]
-        for i in range(1, self.num_frames+1):
-            d_th = i*np.pi/(2*self.num_frames)
-            if cw == 1:
-                d_th = -d_th
-            for c in cubes:
-                try:
-                    if c.z0 > 0:
-                        angle = np.arccos((c.y0-1)/c.r) + d_th    
-                    else:
-                        angle = -np.arccos((c.y0-1)/c.r) + d_th
-                    c.y = 1 + c.r*np.cos(angle)
-                    c.z = 1 + c.r*np.sin(angle)
-                except: #happens when r = 0
-                    pass
-                c.thx = d_th 
-            self.display()
-        #update colors and reset
-        if cw == 1: #clockwise
-            for c in cubes:
-                temp = c.colors['front']
-                c.colors['front'] = c.colors['bottom']
-                c.colors['bottom'] = c.colors['back']
-                c.colors['back'] = c.colors['top']
-                c.colors['top'] = temp
-            #corners
-            temp = self.cubes[8].colors
-            self.cubes[8].colors = self.cubes[2].colors
-            self.cubes[2].colors = self.cubes[19].colors
-            self.cubes[19].colors = self.cubes[25].colors
-            self.cubes[25].colors = temp
-            #edges
-            temp = self.cubes[16].colors
-            self.cubes[16].colors = self.cubes[5].colors
-            self.cubes[5].colors = self.cubes[11].colors
-            self.cubes[11].colors = self.cubes[22].colors
-            self.cubes[22].colors = temp
-        else: #counter-clockwise
-            for c in cubes:
-                temp = c.colors['front']
-                c.colors['front'] = c.colors['top']
-                c.colors['top'] = c.colors['back']
-                c.colors['back'] = c.colors['bottom']
-                c.colors['bottom'] = temp
-            #corners
-            temp = self.cubes[8].colors
-            self.cubes[8].colors = self.cubes[25].colors
-            self.cubes[25].colors = self.cubes[19].colors
-            self.cubes[19].colors = self.cubes[2].colors
-            self.cubes[2].colors = temp
-            #edges
-            temp = self.cubes[16].colors
-            self.cubes[16].colors = self.cubes[22].colors
-            self.cubes[22].colors = self.cubes[11].colors
-            self.cubes[11].colors = self.cubes[5].colors
-            self.cubes[5].colors = temp
-        self.reset()
-        self.busy = 0
+
+        # animation
+        self.ani = animation.FuncAnimation(self.fig, self.R_helper, fargs=[cw, cubes], frames=self.num_frames, repeat=False,
+                                           interval=1)
+
+    def L_helper(self, *fargs):
+        i = fargs[0] + 1
+        cw = fargs[1]
+        cubes = fargs[2]
+
+        d_th = i * np.pi / (2 * self.num_frames)
+        if cw == 0:
+            d_th = - d_th
+        for c in cubes:
+            try:
+                if c.z0 > 0:
+                    angle = np.arccos((c.y0 - 1) / c.r) + d_th
+                else:
+                    angle = -np.arccos((c.y0 - 1) / c.r) + d_th
+                c.y = 1 + c.r * np.cos(angle)
+                c.z = 1 + c.r * np.sin(angle)
+            except:  # happens when r = 0:
+                pass
+            c.thx = d_th
+        self.update_cube_positions()
+
+        if i == self.num_frames:  # last frame. update colors and reset
+            if cw == 1:  # clockwise
+                for c in cubes:
+                    temp = c.colors['front']
+                    c.colors['front'] = c.colors['top']
+                    c.colors['top'] = c.colors['back']
+                    c.colors['back'] = c.colors['bottom']
+                    c.colors['bottom'] = temp
+                # corners
+                temp = self.cubes[6].colors
+                self.cubes[6].colors = self.cubes[23].colors
+                self.cubes[23].colors = self.cubes[17].colors
+                self.cubes[17].colors = self.cubes[0].colors
+                self.cubes[0].colors = temp
+                # edges
+                temp = self.cubes[3].colors
+                self.cubes[3].colors = self.cubes[14].colors
+                self.cubes[14].colors = self.cubes[20].colors
+                self.cubes[20].colors = self.cubes[9].colors
+                self.cubes[9].colors = temp
+            else:  # counter-clockwise
+                for c in cubes:
+                    temp = c.colors['front']
+                    c.colors['front'] = c.colors['bottom']
+                    c.colors['bottom'] = c.colors['back']
+                    c.colors['back'] = c.colors['top']
+                    c.colors['top'] = temp
+                # corners
+                temp = self.cubes[6].colors
+                self.cubes[6].colors = self.cubes[0].colors
+                self.cubes[0].colors = self.cubes[17].colors
+                self.cubes[17].colors = self.cubes[23].colors
+                self.cubes[23].colors = temp
+                # edges
+                temp = self.cubes[3].colors
+                self.cubes[3].colors = self.cubes[9].colors
+                self.cubes[9].colors = self.cubes[20].colors
+                self.cubes[20].colors = self.cubes[14].colors
+                self.cubes[14].colors = temp
+            self.reset()
+            self.busy = 0
 
     #rotate left face
     def L(self, cw = 1):
         self.busy = 1
         ind = [0, 3, 6, 9, 12, 14, 17, 20, 23]
         cubes = self.cubes[ind]
-        for i in range(1, self.num_frames+1):
-            d_th = i*np.pi/(2*self.num_frames)
-            if cw == 0:
-                d_th = - d_th
-            for c in cubes:
-                try:
-                    if c.z0 > 0:
-                        angle = np.arccos((c.y0-1)/c.r) + d_th    
-                    else:
-                        angle = -np.arccos((c.y0-1)/c.r) + d_th
-                    c.y = 1 + c.r*np.cos(angle)
-                    c.z = 1 + c.r*np.sin(angle)
-                except: #happens when r = 0:
-                    pass
-                c.thx = d_th
-            self.display()
-        #update colors and reset
-        if cw == 1: #clockwise
-            for c in cubes:
-                temp = c.colors['front']
-                c.colors['front'] = c.colors['top']
-                c.colors['top'] = c.colors['back']
-                c.colors['back'] = c.colors['bottom']
-                c.colors['bottom'] = temp
-            #corners
-            temp = self.cubes[6].colors
-            self.cubes[6].colors = self.cubes[23].colors
-            self.cubes[23].colors = self.cubes[17].colors
-            self.cubes[17].colors = self.cubes[0].colors
-            self.cubes[0].colors = temp
-            #edges
-            temp = self.cubes[3].colors
-            self.cubes[3].colors = self.cubes[14].colors
-            self.cubes[14].colors = self.cubes[20].colors
-            self.cubes[20].colors = self.cubes[9].colors
-            self.cubes[9].colors = temp
-        else: #counter-clockwise
-            for c in cubes:
-                temp = c.colors['front']
-                c.colors['front'] = c.colors['bottom']
-                c.colors['bottom'] = c.colors['back']
-                c.colors['back'] = c.colors['top']
-                c.colors['top'] = temp
-            #corners
-            temp = self.cubes[6].colors
-            self.cubes[6].colors = self.cubes[0].colors
-            self.cubes[0].colors = self.cubes[17].colors
-            self.cubes[17].colors = self.cubes[23].colors
-            self.cubes[23].colors = temp
-            #edges
-            temp = self.cubes[3].colors
-            self.cubes[3].colors = self.cubes[9].colors
-            self.cubes[9].colors = self.cubes[20].colors
-            self.cubes[20].colors = self.cubes[14].colors
-            self.cubes[14].colors = temp
-        self.reset()
-        self.busy = 0
+
+        # animation
+        self.ani = animation.FuncAnimation(self.fig, self.L_helper, fargs=[cw, cubes], frames=self.num_frames, repeat=False,
+                                           interval=1)
+
+    def U_helper(self, *fargs):
+        i = fargs[0] + 1
+        cw = fargs[1]
+        cubes = fargs[2]
+
+        d_th = i * np.pi / (2 * self.num_frames)
+        if cw == 1:
+            d_th = -d_th
+        for c in cubes:
+            try:
+                if c.y0 > 0:
+                    angle = np.arccos((c.x0 - 1) / c.r) + d_th
+                else:
+                    angle = -np.arccos((c.x0 - 1) / c.r) + d_th
+                c.x = 1 + c.r * np.cos(angle)
+                c.y = 1 + c.r * np.sin(angle)
+            except:  # happens when r = 0
+                pass
+            c.thz = -d_th
+        self.update_cube_positions()
+
+        if i == self.num_frames:  # last frame. update colors and reset
+            if cw == 1:  # clockwise
+                for c in cubes:
+                    temp = c.colors['front']
+                    c.colors['front'] = c.colors['right']
+                    c.colors['right'] = c.colors['back']
+                    c.colors['back'] = c.colors['left']
+                    c.colors['left'] = temp
+                # corners
+                temp = self.cubes[23].colors
+                self.cubes[23].colors = self.cubes[6].colors
+                self.cubes[6].colors = self.cubes[8].colors
+                self.cubes[8].colors = self.cubes[25].colors
+                self.cubes[25].colors = temp
+                # edges
+                temp = self.cubes[24].colors
+                self.cubes[24].colors = self.cubes[14].colors
+                self.cubes[14].colors = self.cubes[7].colors
+                self.cubes[7].colors = self.cubes[16].colors
+                self.cubes[16].colors = temp
+            else:  # counter-clockwise
+                for c in cubes:
+                    temp = c.colors['front']
+                    c.colors['front'] = c.colors['left']
+                    c.colors['left'] = c.colors['back']
+                    c.colors['back'] = c.colors['right']
+                    c.colors['right'] = temp
+                # corners
+                temp = self.cubes[23].colors
+                self.cubes[23].colors = self.cubes[25].colors
+                self.cubes[25].colors = self.cubes[8].colors
+                self.cubes[8].colors = self.cubes[6].colors
+                self.cubes[6].colors = temp
+                # edges
+                temp = self.cubes[24].colors
+                self.cubes[24].colors = self.cubes[16].colors
+                self.cubes[16].colors = self.cubes[7].colors
+                self.cubes[7].colors = self.cubes[14].colors
+                self.cubes[14].colors = temp
+            self.reset()
+            self.busy = 0
 
     #rotate up face
     def U(self, cw=1):
         self.busy = 1
         ind = [6, 7, 8, 14, 15, 16, 23, 24, 25]
         cubes = self.cubes[ind]
-        for i in range(1, self.num_frames+1):
-            d_th = i*np.pi/(2*self.num_frames)
-            if cw == 1:
-                d_th = -d_th
-            for c in cubes:
-                try:
-                    if c.y0 > 0:
-                        angle = np.arccos((c.x0-1)/c.r) + d_th    
-                    else:
-                        angle = -np.arccos((c.x0-1)/c.r) + d_th
-                    c.x = 1 + c.r*np.cos(angle)
-                    c.y = 1 + c.r*np.sin(angle)
-                except: #happens when r = 0
-                    pass
-                c.thz = -d_th
-            self.display()
-        #update colors and reset
-        if cw == 1: #clockwise
-            for c in cubes:
-                temp = c.colors['front']
-                c.colors['front'] = c.colors['right']
-                c.colors['right'] = c.colors['back']
-                c.colors['back'] = c.colors['left']
-                c.colors['left'] = temp
-            #corners
-            temp = self.cubes[23].colors
-            self.cubes[23].colors = self.cubes[6].colors
-            self.cubes[6].colors = self.cubes[8].colors
-            self.cubes[8].colors = self.cubes[25].colors
-            self.cubes[25].colors = temp
-            #edges
-            temp = self.cubes[24].colors
-            self.cubes[24].colors = self.cubes[14].colors
-            self.cubes[14].colors = self.cubes[7].colors
-            self.cubes[7].colors = self.cubes[16].colors
-            self.cubes[16].colors = temp
-        else: #counter-clockwise
-            for c in cubes:
-                temp = c.colors['front']
-                c.colors['front'] = c.colors['left']
-                c.colors['left'] = c.colors['back']
-                c.colors['back'] = c.colors['right']
-                c.colors['right'] = temp
-            #corners
-            temp = self.cubes[23].colors
-            self.cubes[23].colors = self.cubes[25].colors
-            self.cubes[25].colors = self.cubes[8].colors
-            self.cubes[8].colors = self.cubes[6].colors
-            self.cubes[6].colors = temp
-            #edges
-            temp = self.cubes[24].colors
-            self.cubes[24].colors = self.cubes[16].colors
-            self.cubes[16].colors = self.cubes[7].colors
-            self.cubes[7].colors = self.cubes[14].colors
-            self.cubes[14].colors = temp
-        self.reset()
-        self.busy = 0
+
+        # animation
+        self.ani = animation.FuncAnimation(self.fig, self.U_helper, fargs=[cw, cubes], frames=self.num_frames, repeat=False,
+                                           interval=1)
+
+    def D_helper(self, *fargs):
+        i = fargs[0] + 1
+        cw = fargs[1]
+        cubes = fargs[2]
+
+        d_th = i * np.pi / (2 * self.num_frames)
+        if cw == 0:
+            d_th = - d_th
+        for c in cubes:
+            try:
+                if c.y0 > 0:
+                    angle = np.arccos((c.x0 - 1) / c.r) + d_th
+                else:
+                    angle = -np.arccos((c.x0 - 1) / c.r) + d_th
+                c.x = 1 + c.r * np.cos(angle)
+                c.y = 1 + c.r * np.sin(angle)
+            except:  # happens when r = 0
+                pass
+            c.thz = -d_th
+        self.update_cube_positions()
+
+        if i == self.num_frames:  # last frame. update colors and reset
+            if cw == 1:  # clockwise
+                for c in cubes:
+                    temp = c.colors['right']
+                    c.colors['right'] = c.colors['front']
+                    c.colors['front'] = c.colors['left']
+                    c.colors['left'] = c.colors['back']
+                    c.colors['back'] = temp
+                # corners
+                temp = self.cubes[0].colors
+                self.cubes[0].colors = self.cubes[17].colors
+                self.cubes[17].colors = self.cubes[19].colors
+                self.cubes[19].colors = self.cubes[2].colors
+                self.cubes[2].colors = temp
+                # edges
+                temp = self.cubes[1].colors
+                self.cubes[1].colors = self.cubes[9].colors
+                self.cubes[9].colors = self.cubes[18].colors
+                self.cubes[18].colors = self.cubes[11].colors
+                self.cubes[11].colors = temp
+            else:  # counter-clockwise
+                for c in cubes:
+                    temp = c.colors['right']
+                    c.colors['right'] = c.colors['back']
+                    c.colors['back'] = c.colors['left']
+                    c.colors['left'] = c.colors['front']
+                    c.colors['front'] = temp
+                # corners
+                temp = self.cubes[0].colors
+                self.cubes[0].colors = self.cubes[2].colors
+                self.cubes[2].colors = self.cubes[19].colors
+                self.cubes[19].colors = self.cubes[17].colors
+                self.cubes[17].colors = temp
+                # edges
+                temp = self.cubes[1].colors
+                self.cubes[1].colors = self.cubes[11].colors
+                self.cubes[11].colors = self.cubes[18].colors
+                self.cubes[18].colors = self.cubes[9].colors
+                self.cubes[9].colors = temp
+            self.reset()
+            self.busy = 0
 
     #rotate down face
     def D(self, cw=1):
         self.busy = 1
         ind = [0, 1, 2, 9, 10, 11, 17, 18, 19]
         cubes = self.cubes[ind]
-        for i in range(1, self.num_frames+1):
-            d_th = i*np.pi/(2*self.num_frames)
-            if cw == 0:
-                d_th = - d_th
-            for c in cubes:
-                try:
-                    if c.y0 > 0:
-                        angle = np.arccos((c.x0-1)/c.r) + d_th    
-                    else:
-                        angle = -np.arccos((c.x0-1)/c.r) + d_th
-                    c.x = 1 + c.r*np.cos(angle)
-                    c.y = 1 + c.r*np.sin(angle)
-                except: #happens when r = 0
-                    pass
-                c.thz = -d_th
-            self.display()
-        #update colors and reset
-        if cw == 1: #clockwise
-            for c in cubes:
-                temp = c.colors['right']
-                c.colors['right'] = c.colors['front']
-                c.colors['front'] = c.colors['left']
-                c.colors['left'] = c.colors['back']
-                c.colors['back'] = temp
-            #corners
-            temp = self.cubes[0].colors
-            self.cubes[0].colors = self.cubes[17].colors
-            self.cubes[17].colors = self.cubes[19].colors
-            self.cubes[19].colors = self.cubes[2].colors
-            self.cubes[2].colors = temp
-            #edges
-            temp = self.cubes[1].colors
-            self.cubes[1].colors = self.cubes[9].colors
-            self.cubes[9].colors = self.cubes[18].colors
-            self.cubes[18].colors = self.cubes[11].colors
-            self.cubes[11].colors = temp
-        else: #counter-clockwise
-            for c in cubes:
-                temp = c.colors['right']
-                c.colors['right'] = c.colors['back']
-                c.colors['back'] = c.colors['left']
-                c.colors['left'] = c.colors['front']
-                c.colors['front'] = temp
-            #corners
-            temp = self.cubes[0].colors
-            self.cubes[0].colors = self.cubes[2].colors
-            self.cubes[2].colors = self.cubes[19].colors
-            self.cubes[19].colors = self.cubes[17].colors
-            self.cubes[17].colors = temp
-            #edges
-            temp = self.cubes[1].colors
-            self.cubes[1].colors = self.cubes[11].colors
-            self.cubes[11].colors = self.cubes[18].colors
-            self.cubes[18].colors = self.cubes[9].colors
-            self.cubes[9].colors = temp
-        self.reset()
-        self.busy = 0
+
+        # animation
+        self.ani = animation.FuncAnimation(self.fig, self.D_helper, fargs=[cw, cubes], frames=self.num_frames, repeat=False,
+                                           interval=1)
+
+    def B_helper(self, *fargs):
+        i = fargs[0] + 1
+        cw = fargs[1]
+        cubes = fargs[2]
+
+        d_th = i * np.pi / (2 * self.num_frames)
+        if cw == 0:
+            d_th = - d_th
+        for c in cubes:
+            try:
+                if c.z0 > 0:
+                    angle = np.arccos((c.x0 - 1) / c.r) + d_th
+                else:
+                    angle = -np.arccos((c.x0 - 1) / c.r) + d_th
+                c.x = 1 + c.r * np.cos(angle)
+                c.z = 1 + c.r * np.sin(angle)
+            except:  # happens when r = 0
+                pass
+            c.thy = d_th
+        self.update_cube_positions()
+
+        if i == self.num_frames:  # last frame. update colors and reset
+            if cw == 1:  # clockwise
+                for c in cubes:
+                    temp = c.colors['right']
+                    c.colors['right'] = c.colors['bottom']
+                    c.colors['bottom'] = c.colors['left']
+                    c.colors['left'] = c.colors['top']
+                    c.colors['top'] = temp
+                # corners
+                temp = self.cubes[25].colors
+                self.cubes[25].colors = self.cubes[19].colors
+                self.cubes[19].colors = self.cubes[17].colors
+                self.cubes[17].colors = self.cubes[23].colors
+                self.cubes[23].colors = temp
+                # edges
+                temp = self.cubes[22].colors
+                self.cubes[22].colors = self.cubes[18].colors
+                self.cubes[18].colors = self.cubes[20].colors
+                self.cubes[20].colors = self.cubes[24].colors
+                self.cubes[24].colors = temp
+            else:  # counter-clockwise
+                for c in cubes:
+                    temp = c.colors['right']
+                    c.colors['right'] = c.colors['top']
+                    c.colors['top'] = c.colors['left']
+                    c.colors['left'] = c.colors['bottom']
+                    c.colors['bottom'] = temp
+                # corners
+                temp = self.cubes[25].colors
+                self.cubes[25].colors = self.cubes[23].colors
+                self.cubes[23].colors = self.cubes[17].colors
+                self.cubes[17].colors = self.cubes[19].colors
+                self.cubes[19].colors = temp
+                # edges
+                temp = self.cubes[22].colors
+                self.cubes[22].colors = self.cubes[24].colors
+                self.cubes[24].colors = self.cubes[20].colors
+                self.cubes[20].colors = self.cubes[18].colors
+                self.cubes[18].colors = temp
+            self.reset()
+            self.busy = 0
 
     #rotate back face
     def B(self, cw = 1):
         self.busy = 1
         ind = [17, 18, 19, 20, 21, 22, 23, 24, 25]
         cubes = self.cubes[ind]
-        for i in range(1, self.num_frames+1):
-            d_th = i*np.pi/(2*self.num_frames)
-            if cw == 0:
-                d_th = - d_th
-            for c in cubes:
-                try:
-                    if c.z0 > 0:
-                        angle = np.arccos((c.x0-1)/c.r) + d_th    
-                    else:
-                        angle = -np.arccos((c.x0-1)/c.r) + d_th
-                    c.x = 1 + c.r*np.cos(angle)
-                    c.z = 1 + c.r*np.sin(angle)
-                except: #happens when r = 0
-                    pass
-                c.thy = d_th  
-            self.display()
-        #update colors and reset
-        if cw == 1: #clockwise
-            for c in cubes:
-                temp = c.colors['right']
-                c.colors['right'] = c.colors['bottom']
-                c.colors['bottom'] = c.colors['left']
-                c.colors['left'] = c.colors['top']
-                c.colors['top'] = temp
-            #corners
-            temp = self.cubes[25].colors
-            self.cubes[25].colors = self.cubes[19].colors
-            self.cubes[19].colors = self.cubes[17].colors
-            self.cubes[17].colors = self.cubes[23].colors
-            self.cubes[23].colors = temp
-            #edges
-            temp = self.cubes[22].colors
-            self.cubes[22].colors = self.cubes[18].colors
-            self.cubes[18].colors = self.cubes[20].colors
-            self.cubes[20].colors = self.cubes[24].colors
-            self.cubes[24].colors = temp
-        else: #counter-clockwise
-            for c in cubes:
-                temp = c.colors['right']
-                c.colors['right'] = c.colors['top']
-                c.colors['top'] = c.colors['left']
-                c.colors['left'] = c.colors['bottom']
-                c.colors['bottom'] = temp
-            #corners
-            temp = self.cubes[25].colors
-            self.cubes[25].colors = self.cubes[23].colors
-            self.cubes[23].colors = self.cubes[17].colors
-            self.cubes[17].colors = self.cubes[19].colors
-            self.cubes[19].colors = temp
-            #edges
-            temp = self.cubes[22].colors
-            self.cubes[22].colors = self.cubes[24].colors
-            self.cubes[24].colors = self.cubes[20].colors
-            self.cubes[20].colors = self.cubes[18].colors
-            self.cubes[18].colors = temp
-        self.reset()
-        self.busy = 0
+
+        # animation
+        self.ani = animation.FuncAnimation(self.fig, self.B_helper, fargs=[cw, cubes], frames=self.num_frames, repeat=False,
+                                           interval=1)
 
     #rotate front face (ccw)
     def FP(self):
@@ -853,7 +914,7 @@ class Rubiks:
     def reset_all(self):
         for c in self.cubes:
             c.colors = {'front': 'b', 'back': 'g', 'left': 'orange', 'right': 'r', 'top': 'y', 'bottom': 'w'}
-        self.display()
+        self.update_cube_positions()
 
     #if cube starts in solved position, this brings it to the "superflip" position
     def super(self):
@@ -862,9 +923,9 @@ class Rubiks:
         r.U(); r.U(); r.L(); r.B(); r.B(); r.R(); r.UP(); r.DP(); r.R()
         r.R(); r.F(); r.RP(); r.L(); r.B(); r.B(); r.U(); r.U(); r.F(); r.F()
             
-#display the cube
+#update_cube_positions the cube
 r = Rubiks()
-r.display()
+r.update_cube_positions()
 
 #block program from ending
 plt.show()
