@@ -64,7 +64,7 @@ class Cube:
             self.r = np.sqrt(2)
 
     #update the position of the cube's vertices
-    def display(self):
+    def update_position(self):
         if self.thy != 0:
             #front face
             xs = [self.x+(np.sqrt(2)/2)*np.cos(5*np.pi/4 + self.thy), self.x+(np.sqrt(2)/2)*np.cos(3*np.pi/4 + self.thy), \
@@ -319,10 +319,10 @@ class Rubiks:
             c.thy = 0
             c.thz = 0
 
-    #call display function on each of the smaller cubes
-    def display(self):
+    #call update_position function on each of the smaller cubes
+    def update_cube_positions(self):
         for c in self.cubes:
-            c.display()
+            c.update_position()
         plt.pause(0.001)
 
     #rotate front face
@@ -346,7 +346,7 @@ class Rubiks:
                 except: #happens when r = 0:
                     pass
                 c.thy = d_th
-            self.display()
+            self.update_cube_positions()
         #update colors and reset
         if cw == 1: #clockwise
             for c in cubes:
@@ -409,7 +409,7 @@ class Rubiks:
                 except: #happens when r = 0
                     pass
                 c.thx = d_th 
-            self.display()
+            self.update_cube_positions()
         #update colors and reset
         if cw == 1: #clockwise
             for c in cubes:
@@ -472,7 +472,7 @@ class Rubiks:
                 except: #happens when r = 0:
                     pass
                 c.thx = d_th
-            self.display()
+            self.update_cube_positions()
         #update colors and reset
         if cw == 1: #clockwise
             for c in cubes:
@@ -535,7 +535,7 @@ class Rubiks:
                 except: #happens when r = 0
                     pass
                 c.thz = -d_th
-            self.display()
+            self.update_cube_positions()
         #update colors and reset
         if cw == 1: #clockwise
             for c in cubes:
@@ -598,7 +598,7 @@ class Rubiks:
                 except: #happens when r = 0
                     pass
                 c.thz = -d_th
-            self.display()
+            self.update_cube_positions()
         #update colors and reset
         if cw == 1: #clockwise
             for c in cubes:
@@ -661,7 +661,7 @@ class Rubiks:
                 except: #happens when r = 0
                     pass
                 c.thy = d_th  
-            self.display()
+            self.update_cube_positions()
         #update colors and reset
         if cw == 1: #clockwise
             for c in cubes:
@@ -853,7 +853,7 @@ class Rubiks:
     def reset_all(self):
         for c in self.cubes:
             c.colors = {'front': 'b', 'back': 'g', 'left': 'orange', 'right': 'r', 'top': 'y', 'bottom': 'w'}
-        self.display()
+        self.update_cube_positions()
 
     #if cube starts in solved position, this brings it to the "superflip" position
     def super(self):
@@ -864,7 +864,7 @@ class Rubiks:
             
 #display the cube
 r = Rubiks()
-r.display()
+r.update_cube_positions()
 
 #block program from ending
 plt.show()
