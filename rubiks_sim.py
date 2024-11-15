@@ -218,7 +218,8 @@ class Rubiks:
     def __init__(self):
         self.num_frames = 10 #frames per face rotation
         self.fig = plt.figure()
-        self.ax = Axes3D(self.fig)
+        self.ax = Axes3D(self.fig, auto_add_to_figure=False)
+        self.fig.add_axes(self.ax)
         self.ax.view_init(elev=20, azim=240) #initialize viewing angle
         #set axis limits and labels
         self.ax.set_xlim(-1, 3)
@@ -323,7 +324,7 @@ class Rubiks:
     def update_cube_positions(self):
         for c in self.cubes:
             c.update_position()
-        plt.pause(0.001)
+        plt.pause(0.001)  # triggers display to update
 
     #rotate front face
     def F(self, cw = 1):
