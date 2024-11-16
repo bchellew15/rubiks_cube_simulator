@@ -275,9 +275,9 @@ class Rubiks:
         self.button_ax_super = plt.axes([0.4, 0.925, 0.2, 0.075])
         self.bsuper = Button(self.button_ax_super, 'Superflip')
         self.bsuper.on_clicked(self.super_button)
-        self.button_ax_solve = plt.axes([0.6, 0.925, 0.2, 0.075])
-        self.bsolve = Button(self.button_ax_solve, 'Solve')
-        self.bsolve.on_clicked(self.solve_button)
+        # self.button_ax_solve = plt.axes([0.6, 0.925, 0.2, 0.075])
+        # self.bsolve = Button(self.button_ax_solve, 'Solve')
+        # self.bsolve.on_clicked(self.solve_button)
         #button queue:
         self.busy = 0
         self.q = queue.Queue()
@@ -835,11 +835,11 @@ class Rubiks:
             while not self.q.empty():
                 self.q.get()()
 
-    def solve_button(self, event=None):
-        self.q.put(self.solve)
-        if not self.busy:
-            while not self.q.empty():
-                self.q.get()()
+    # def solve_button(self, event=None):
+    #     self.q.put(self.solve)
+    #     if not self.busy:
+    #         while not self.q.empty():
+    #             self.q.get()()
 
     # reset colors for all the small cubes
     def reset_all(self):
@@ -875,8 +875,7 @@ class Rubiks:
         r.U(); r.U(); r.L(); r.B(); r.B(); r.R(); r.UP(); r.DP(); r.R()
         r.R(); r.F(); r.RP(); r.L(); r.B(); r.B(); r.U(); r.U(); r.F(); r.F()
 
-    def solve(self):
-        print("todo")
+    # def solve(self):
             
 #display the cube
 r = Rubiks()
