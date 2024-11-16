@@ -1,6 +1,5 @@
 '''
 Rubik's Cube Simulator
-129L Final Project
 Author: Blake Chellew
 '''
 
@@ -11,10 +10,10 @@ import numpy as np
 from matplotlib.widgets import Button
 import queue
 
-#Cube class: each of the 26 smaller cubes is an instance of this class
-class Cube:
+#Cubelet class: each of the 26 cubelets is an instance of this class
+class Cubelet:
 
-    #coordinates are center of cube
+    #coordinates are center of cubelet
     def __init__(self, x, y, z, num, ax):
 
         self.ax = ax
@@ -63,7 +62,7 @@ class Cube:
         else:
             self.r = np.sqrt(2)
 
-    #update the position of the cube's vertices
+    #update the position of the cubelet's vertices
     def update_position(self):
         if self.thy != 0:
             #front face
@@ -214,7 +213,7 @@ class Cube:
         self.right_face.set_facecolor(self.colors['right'])  
 
         
-class Rubiks:
+class Cube:
     def __init__(self):
         self.num_frames = 6 #frames per face rotation
         self.fig = plt.figure()
@@ -282,40 +281,40 @@ class Rubiks:
         self.busy = 0
         self.q = queue.Queue()
 
-        #create cubes with side length 1
-        self.cubes = []
-        self.cubes.append(Cube(0, 0, 0, 0, self.ax))
-        self.cubes.append(Cube(1, 0, 0, 1, self.ax))
-        self.cubes.append(Cube(2, 0, 0, 2, self.ax))
-        self.cubes.append(Cube(0, 0, 1, 3, self.ax))
-        self.cubes.append(Cube(1, 0, 1, 4, self.ax))
-        self.cubes.append(Cube(2, 0, 1, 5, self.ax))
-        self.cubes.append(Cube(0, 0, 2, 6, self.ax))
-        self.cubes.append(Cube(1, 0, 2, 7, self.ax))
-        self.cubes.append(Cube(2, 0, 2, 8, self.ax))
-        self.cubes.append(Cube(0, 1, 0, 9, self.ax))
-        self.cubes.append(Cube(1, 1, 0, 10, self.ax))
-        self.cubes.append(Cube(2, 1, 0, 11, self.ax))
-        self.cubes.append(Cube(0, 1, 1, 12, self.ax))
-        self.cubes.append(Cube(2, 1, 1, 13, self.ax))
-        self.cubes.append(Cube(0, 1, 2, 14, self.ax))
-        self.cubes.append(Cube(1, 1, 2, 15, self.ax))
-        self.cubes.append(Cube(2, 1, 2, 16, self.ax))
-        self.cubes.append(Cube(0, 2, 0, 17, self.ax))
-        self.cubes.append(Cube(1, 2, 0, 18, self.ax))
-        self.cubes.append(Cube(2, 2, 0, 19, self.ax))
-        self.cubes.append(Cube(0, 2, 1, 20, self.ax))
-        self.cubes.append(Cube(1, 2, 1, 21, self.ax))
-        self.cubes.append(Cube(2, 2, 1, 22, self.ax))
-        self.cubes.append(Cube(0, 2, 2, 23, self.ax))
-        self.cubes.append(Cube(1, 2, 2, 24, self.ax))
-        self.cubes.append(Cube(2, 2, 2, 25, self.ax))
-        self.cubes = np.array(self.cubes)
+        #create cubelets with side length 1
+        self.cubelets = []
+        self.cubelets.append(Cubelet(0, 0, 0, 0, self.ax))
+        self.cubelets.append(Cubelet(1, 0, 0, 1, self.ax))
+        self.cubelets.append(Cubelet(2, 0, 0, 2, self.ax))
+        self.cubelets.append(Cubelet(0, 0, 1, 3, self.ax))
+        self.cubelets.append(Cubelet(1, 0, 1, 4, self.ax))
+        self.cubelets.append(Cubelet(2, 0, 1, 5, self.ax))
+        self.cubelets.append(Cubelet(0, 0, 2, 6, self.ax))
+        self.cubelets.append(Cubelet(1, 0, 2, 7, self.ax))
+        self.cubelets.append(Cubelet(2, 0, 2, 8, self.ax))
+        self.cubelets.append(Cubelet(0, 1, 0, 9, self.ax))
+        self.cubelets.append(Cubelet(1, 1, 0, 10, self.ax))
+        self.cubelets.append(Cubelet(2, 1, 0, 11, self.ax))
+        self.cubelets.append(Cubelet(0, 1, 1, 12, self.ax))
+        self.cubelets.append(Cubelet(2, 1, 1, 13, self.ax))
+        self.cubelets.append(Cubelet(0, 1, 2, 14, self.ax))
+        self.cubelets.append(Cubelet(1, 1, 2, 15, self.ax))
+        self.cubelets.append(Cubelet(2, 1, 2, 16, self.ax))
+        self.cubelets.append(Cubelet(0, 2, 0, 17, self.ax))
+        self.cubelets.append(Cubelet(1, 2, 0, 18, self.ax))
+        self.cubelets.append(Cubelet(2, 2, 0, 19, self.ax))
+        self.cubelets.append(Cubelet(0, 2, 1, 20, self.ax))
+        self.cubelets.append(Cubelet(1, 2, 1, 21, self.ax))
+        self.cubelets.append(Cubelet(2, 2, 1, 22, self.ax))
+        self.cubelets.append(Cubelet(0, 2, 2, 23, self.ax))
+        self.cubelets.append(Cubelet(1, 2, 2, 24, self.ax))
+        self.cubelets.append(Cubelet(2, 2, 2, 25, self.ax))
+        self.cubelets = np.array(self.cubelets)
 
-    #reset positions of each cube to default
+    #reset positions of each cubelet to default
     #colors are updated elsewhere so cube does not appear to actually reset
     def reset(self):
-        for c in self.cubes:
+        for c in self.cubelets:
             c.x = c.x0
             c.y = c.y0
             c.z = c.z0
@@ -323,9 +322,9 @@ class Rubiks:
             c.thy = 0
             c.thz = 0
 
-    #call update_position function on each of the smaller cubes
-    def update_cube_positions(self):
-        for c in self.cubes:
+    #call update_position function on each of the cubelets
+    def update_cubelet_positions(self):
+        for c in self.cubelets:
             c.update_position()
         plt.pause(0.001)  # triggers display to update
 
@@ -333,13 +332,13 @@ class Rubiks:
     def F(self, cw = 1):
         self.busy = 1
         ind = [0, 1, 2, 3, 4, 5, 6, 7, 8]
-        cubes = self.cubes[ind]
+        cubelets = self.cubelets[ind]
         #display frames
         for i in range(1, self.num_frames+1):
             d_th = i*np.pi/(2*self.num_frames)
             if cw == 1:
                 d_th = -d_th
-            for c in cubes:
+            for c in cubelets:
                 try:
                     if c.z0 > 0:
                         angle = np.arccos((c.x0-1)/c.r) + d_th    
@@ -350,46 +349,46 @@ class Rubiks:
                 except: #happens when r = 0:
                     pass
                 c.thy = d_th
-            self.update_cube_positions()
+            self.update_cubelet_positions()
         #update colors and reset
         if cw == 1: #clockwise
-            for c in cubes:
+            for c in cubelets:
                 temp = c.colors['right']
                 c.colors['right'] = c.colors['top']
                 c.colors['top'] = c.colors['left']
                 c.colors['left'] = c.colors['bottom']
                 c.colors['bottom'] = temp
             #corners
-            temp = self.cubes[6].colors
-            self.cubes[6].colors = self.cubes[0].colors
-            self.cubes[0].colors = self.cubes[2].colors
-            self.cubes[2].colors = self.cubes[8].colors
-            self.cubes[8].colors = temp
+            temp = self.cubelets[6].colors
+            self.cubelets[6].colors = self.cubelets[0].colors
+            self.cubelets[0].colors = self.cubelets[2].colors
+            self.cubelets[2].colors = self.cubelets[8].colors
+            self.cubelets[8].colors = temp
             #edges
-            temp = self.cubes[7].colors
-            self.cubes[7].colors = self.cubes[3].colors
-            self.cubes[3].colors = self.cubes[1].colors
-            self.cubes[1].colors = self.cubes[5].colors
-            self.cubes[5].colors = temp
+            temp = self.cubelets[7].colors
+            self.cubelets[7].colors = self.cubelets[3].colors
+            self.cubelets[3].colors = self.cubelets[1].colors
+            self.cubelets[1].colors = self.cubelets[5].colors
+            self.cubelets[5].colors = temp
         else: #counter-clockwise
-            for c in cubes:
+            for c in cubelets:
                 temp = c.colors['right']
                 c.colors['right'] = c.colors['bottom']
                 c.colors['bottom'] = c.colors['left']
                 c.colors['left'] = c.colors['top']
                 c.colors['top'] = temp
             #corners
-            temp = self.cubes[6].colors
-            self.cubes[6].colors = self.cubes[8].colors
-            self.cubes[8].colors = self.cubes[2].colors
-            self.cubes[2].colors = self.cubes[0].colors
-            self.cubes[0].colors = temp
+            temp = self.cubelets[6].colors
+            self.cubelets[6].colors = self.cubelets[8].colors
+            self.cubelets[8].colors = self.cubelets[2].colors
+            self.cubelets[2].colors = self.cubelets[0].colors
+            self.cubelets[0].colors = temp
             #edges
-            temp = self.cubes[7].colors
-            self.cubes[7].colors = self.cubes[5].colors
-            self.cubes[5].colors = self.cubes[1].colors
-            self.cubes[1].colors = self.cubes[3].colors
-            self.cubes[3].colors = temp
+            temp = self.cubelets[7].colors
+            self.cubelets[7].colors = self.cubelets[5].colors
+            self.cubelets[5].colors = self.cubelets[1].colors
+            self.cubelets[1].colors = self.cubelets[3].colors
+            self.cubelets[3].colors = temp
         self.reset()
         self.busy = 0
 
@@ -397,12 +396,12 @@ class Rubiks:
     def R(self, cw = 1):
         self.busy = 1
         ind = [2, 5, 8, 11, 13, 16, 19, 22, 25]
-        cubes = self.cubes[ind]
+        cubelets = self.cubelets[ind]
         for i in range(1, self.num_frames+1):
             d_th = i*np.pi/(2*self.num_frames)
             if cw == 1:
                 d_th = -d_th
-            for c in cubes:
+            for c in cubelets:
                 try:
                     if c.z0 > 0:
                         angle = np.arccos((c.y0-1)/c.r) + d_th    
@@ -413,46 +412,46 @@ class Rubiks:
                 except: #happens when r = 0
                     pass
                 c.thx = d_th 
-            self.update_cube_positions()
+            self.update_cubelet_positions()
         #update colors and reset
         if cw == 1: #clockwise
-            for c in cubes:
+            for c in cubelets:
                 temp = c.colors['front']
                 c.colors['front'] = c.colors['bottom']
                 c.colors['bottom'] = c.colors['back']
                 c.colors['back'] = c.colors['top']
                 c.colors['top'] = temp
             #corners
-            temp = self.cubes[8].colors
-            self.cubes[8].colors = self.cubes[2].colors
-            self.cubes[2].colors = self.cubes[19].colors
-            self.cubes[19].colors = self.cubes[25].colors
-            self.cubes[25].colors = temp
+            temp = self.cubelets[8].colors
+            self.cubelets[8].colors = self.cubelets[2].colors
+            self.cubelets[2].colors = self.cubelets[19].colors
+            self.cubelets[19].colors = self.cubelets[25].colors
+            self.cubelets[25].colors = temp
             #edges
-            temp = self.cubes[16].colors
-            self.cubes[16].colors = self.cubes[5].colors
-            self.cubes[5].colors = self.cubes[11].colors
-            self.cubes[11].colors = self.cubes[22].colors
-            self.cubes[22].colors = temp
+            temp = self.cubelets[16].colors
+            self.cubelets[16].colors = self.cubelets[5].colors
+            self.cubelets[5].colors = self.cubelets[11].colors
+            self.cubelets[11].colors = self.cubelets[22].colors
+            self.cubelets[22].colors = temp
         else: #counter-clockwise
-            for c in cubes:
+            for c in cubelets:
                 temp = c.colors['front']
                 c.colors['front'] = c.colors['top']
                 c.colors['top'] = c.colors['back']
                 c.colors['back'] = c.colors['bottom']
                 c.colors['bottom'] = temp
             #corners
-            temp = self.cubes[8].colors
-            self.cubes[8].colors = self.cubes[25].colors
-            self.cubes[25].colors = self.cubes[19].colors
-            self.cubes[19].colors = self.cubes[2].colors
-            self.cubes[2].colors = temp
+            temp = self.cubelets[8].colors
+            self.cubelets[8].colors = self.cubelets[25].colors
+            self.cubelets[25].colors = self.cubelets[19].colors
+            self.cubelets[19].colors = self.cubelets[2].colors
+            self.cubelets[2].colors = temp
             #edges
-            temp = self.cubes[16].colors
-            self.cubes[16].colors = self.cubes[22].colors
-            self.cubes[22].colors = self.cubes[11].colors
-            self.cubes[11].colors = self.cubes[5].colors
-            self.cubes[5].colors = temp
+            temp = self.cubelets[16].colors
+            self.cubelets[16].colors = self.cubelets[22].colors
+            self.cubelets[22].colors = self.cubelets[11].colors
+            self.cubelets[11].colors = self.cubelets[5].colors
+            self.cubelets[5].colors = temp
         self.reset()
         self.busy = 0
 
@@ -460,12 +459,12 @@ class Rubiks:
     def L(self, cw = 1):
         self.busy = 1
         ind = [0, 3, 6, 9, 12, 14, 17, 20, 23]
-        cubes = self.cubes[ind]
+        cubelets = self.cubelets[ind]
         for i in range(1, self.num_frames+1):
             d_th = i*np.pi/(2*self.num_frames)
             if cw == 0:
                 d_th = - d_th
-            for c in cubes:
+            for c in cubelets:
                 try:
                     if c.z0 > 0:
                         angle = np.arccos((c.y0-1)/c.r) + d_th    
@@ -476,46 +475,46 @@ class Rubiks:
                 except: #happens when r = 0:
                     pass
                 c.thx = d_th
-            self.update_cube_positions()
+            self.update_cubelet_positions()
         #update colors and reset
         if cw == 1: #clockwise
-            for c in cubes:
+            for c in cubelets:
                 temp = c.colors['front']
                 c.colors['front'] = c.colors['top']
                 c.colors['top'] = c.colors['back']
                 c.colors['back'] = c.colors['bottom']
                 c.colors['bottom'] = temp
             #corners
-            temp = self.cubes[6].colors
-            self.cubes[6].colors = self.cubes[23].colors
-            self.cubes[23].colors = self.cubes[17].colors
-            self.cubes[17].colors = self.cubes[0].colors
-            self.cubes[0].colors = temp
+            temp = self.cubelets[6].colors
+            self.cubelets[6].colors = self.cubelets[23].colors
+            self.cubelets[23].colors = self.cubelets[17].colors
+            self.cubelets[17].colors = self.cubelets[0].colors
+            self.cubelets[0].colors = temp
             #edges
-            temp = self.cubes[3].colors
-            self.cubes[3].colors = self.cubes[14].colors
-            self.cubes[14].colors = self.cubes[20].colors
-            self.cubes[20].colors = self.cubes[9].colors
-            self.cubes[9].colors = temp
+            temp = self.cubelets[3].colors
+            self.cubelets[3].colors = self.cubelets[14].colors
+            self.cubelets[14].colors = self.cubelets[20].colors
+            self.cubelets[20].colors = self.cubelets[9].colors
+            self.cubelets[9].colors = temp
         else: #counter-clockwise
-            for c in cubes:
+            for c in cubelets:
                 temp = c.colors['front']
                 c.colors['front'] = c.colors['bottom']
                 c.colors['bottom'] = c.colors['back']
                 c.colors['back'] = c.colors['top']
                 c.colors['top'] = temp
             #corners
-            temp = self.cubes[6].colors
-            self.cubes[6].colors = self.cubes[0].colors
-            self.cubes[0].colors = self.cubes[17].colors
-            self.cubes[17].colors = self.cubes[23].colors
-            self.cubes[23].colors = temp
+            temp = self.cubelets[6].colors
+            self.cubelets[6].colors = self.cubelets[0].colors
+            self.cubelets[0].colors = self.cubelets[17].colors
+            self.cubelets[17].colors = self.cubelets[23].colors
+            self.cubelets[23].colors = temp
             #edges
-            temp = self.cubes[3].colors
-            self.cubes[3].colors = self.cubes[9].colors
-            self.cubes[9].colors = self.cubes[20].colors
-            self.cubes[20].colors = self.cubes[14].colors
-            self.cubes[14].colors = temp
+            temp = self.cubelets[3].colors
+            self.cubelets[3].colors = self.cubelets[9].colors
+            self.cubelets[9].colors = self.cubelets[20].colors
+            self.cubelets[20].colors = self.cubelets[14].colors
+            self.cubelets[14].colors = temp
         self.reset()
         self.busy = 0
 
@@ -523,12 +522,12 @@ class Rubiks:
     def U(self, cw=1):
         self.busy = 1
         ind = [6, 7, 8, 14, 15, 16, 23, 24, 25]
-        cubes = self.cubes[ind]
+        cubelets = self.cubelets[ind]
         for i in range(1, self.num_frames+1):
             d_th = i*np.pi/(2*self.num_frames)
             if cw == 1:
                 d_th = -d_th
-            for c in cubes:
+            for c in cubelets:
                 try:
                     if c.y0 > 0:
                         angle = np.arccos((c.x0-1)/c.r) + d_th    
@@ -539,46 +538,46 @@ class Rubiks:
                 except: #happens when r = 0
                     pass
                 c.thz = -d_th
-            self.update_cube_positions()
+            self.update_cubelet_positions()
         #update colors and reset
         if cw == 1: #clockwise
-            for c in cubes:
+            for c in cubelets:
                 temp = c.colors['front']
                 c.colors['front'] = c.colors['right']
                 c.colors['right'] = c.colors['back']
                 c.colors['back'] = c.colors['left']
                 c.colors['left'] = temp
             #corners
-            temp = self.cubes[23].colors
-            self.cubes[23].colors = self.cubes[6].colors
-            self.cubes[6].colors = self.cubes[8].colors
-            self.cubes[8].colors = self.cubes[25].colors
-            self.cubes[25].colors = temp
+            temp = self.cubelets[23].colors
+            self.cubelets[23].colors = self.cubelets[6].colors
+            self.cubelets[6].colors = self.cubelets[8].colors
+            self.cubelets[8].colors = self.cubelets[25].colors
+            self.cubelets[25].colors = temp
             #edges
-            temp = self.cubes[24].colors
-            self.cubes[24].colors = self.cubes[14].colors
-            self.cubes[14].colors = self.cubes[7].colors
-            self.cubes[7].colors = self.cubes[16].colors
-            self.cubes[16].colors = temp
+            temp = self.cubelets[24].colors
+            self.cubelets[24].colors = self.cubelets[14].colors
+            self.cubelets[14].colors = self.cubelets[7].colors
+            self.cubelets[7].colors = self.cubelets[16].colors
+            self.cubelets[16].colors = temp
         else: #counter-clockwise
-            for c in cubes:
+            for c in cubelets:
                 temp = c.colors['front']
                 c.colors['front'] = c.colors['left']
                 c.colors['left'] = c.colors['back']
                 c.colors['back'] = c.colors['right']
                 c.colors['right'] = temp
             #corners
-            temp = self.cubes[23].colors
-            self.cubes[23].colors = self.cubes[25].colors
-            self.cubes[25].colors = self.cubes[8].colors
-            self.cubes[8].colors = self.cubes[6].colors
-            self.cubes[6].colors = temp
+            temp = self.cubelets[23].colors
+            self.cubelets[23].colors = self.cubelets[25].colors
+            self.cubelets[25].colors = self.cubelets[8].colors
+            self.cubelets[8].colors = self.cubelets[6].colors
+            self.cubelets[6].colors = temp
             #edges
-            temp = self.cubes[24].colors
-            self.cubes[24].colors = self.cubes[16].colors
-            self.cubes[16].colors = self.cubes[7].colors
-            self.cubes[7].colors = self.cubes[14].colors
-            self.cubes[14].colors = temp
+            temp = self.cubelets[24].colors
+            self.cubelets[24].colors = self.cubelets[16].colors
+            self.cubelets[16].colors = self.cubelets[7].colors
+            self.cubelets[7].colors = self.cubelets[14].colors
+            self.cubelets[14].colors = temp
         self.reset()
         self.busy = 0
 
@@ -586,12 +585,12 @@ class Rubiks:
     def D(self, cw=1):
         self.busy = 1
         ind = [0, 1, 2, 9, 10, 11, 17, 18, 19]
-        cubes = self.cubes[ind]
+        cubelets = self.cubelets[ind]
         for i in range(1, self.num_frames+1):
             d_th = i*np.pi/(2*self.num_frames)
             if cw == 0:
                 d_th = - d_th
-            for c in cubes:
+            for c in cubelets:
                 try:
                     if c.y0 > 0:
                         angle = np.arccos((c.x0-1)/c.r) + d_th    
@@ -602,46 +601,46 @@ class Rubiks:
                 except: #happens when r = 0
                     pass
                 c.thz = -d_th
-            self.update_cube_positions()
+            self.update_cubelet_positions()
         #update colors and reset
         if cw == 1: #clockwise
-            for c in cubes:
+            for c in cubelets:
                 temp = c.colors['right']
                 c.colors['right'] = c.colors['front']
                 c.colors['front'] = c.colors['left']
                 c.colors['left'] = c.colors['back']
                 c.colors['back'] = temp
             #corners
-            temp = self.cubes[0].colors
-            self.cubes[0].colors = self.cubes[17].colors
-            self.cubes[17].colors = self.cubes[19].colors
-            self.cubes[19].colors = self.cubes[2].colors
-            self.cubes[2].colors = temp
+            temp = self.cubelets[0].colors
+            self.cubelets[0].colors = self.cubelets[17].colors
+            self.cubelets[17].colors = self.cubelets[19].colors
+            self.cubelets[19].colors = self.cubelets[2].colors
+            self.cubelets[2].colors = temp
             #edges
-            temp = self.cubes[1].colors
-            self.cubes[1].colors = self.cubes[9].colors
-            self.cubes[9].colors = self.cubes[18].colors
-            self.cubes[18].colors = self.cubes[11].colors
-            self.cubes[11].colors = temp
+            temp = self.cubelets[1].colors
+            self.cubelets[1].colors = self.cubelets[9].colors
+            self.cubelets[9].colors = self.cubelets[18].colors
+            self.cubelets[18].colors = self.cubelets[11].colors
+            self.cubelets[11].colors = temp
         else: #counter-clockwise
-            for c in cubes:
+            for c in cubelets:
                 temp = c.colors['right']
                 c.colors['right'] = c.colors['back']
                 c.colors['back'] = c.colors['left']
                 c.colors['left'] = c.colors['front']
                 c.colors['front'] = temp
             #corners
-            temp = self.cubes[0].colors
-            self.cubes[0].colors = self.cubes[2].colors
-            self.cubes[2].colors = self.cubes[19].colors
-            self.cubes[19].colors = self.cubes[17].colors
-            self.cubes[17].colors = temp
+            temp = self.cubelets[0].colors
+            self.cubelets[0].colors = self.cubelets[2].colors
+            self.cubelets[2].colors = self.cubelets[19].colors
+            self.cubelets[19].colors = self.cubelets[17].colors
+            self.cubelets[17].colors = temp
             #edges
-            temp = self.cubes[1].colors
-            self.cubes[1].colors = self.cubes[11].colors
-            self.cubes[11].colors = self.cubes[18].colors
-            self.cubes[18].colors = self.cubes[9].colors
-            self.cubes[9].colors = temp
+            temp = self.cubelets[1].colors
+            self.cubelets[1].colors = self.cubelets[11].colors
+            self.cubelets[11].colors = self.cubelets[18].colors
+            self.cubelets[18].colors = self.cubelets[9].colors
+            self.cubelets[9].colors = temp
         self.reset()
         self.busy = 0
 
@@ -649,12 +648,12 @@ class Rubiks:
     def B(self, cw = 1):
         self.busy = 1
         ind = [17, 18, 19, 20, 21, 22, 23, 24, 25]
-        cubes = self.cubes[ind]
+        cubelets = self.cubelets[ind]
         for i in range(1, self.num_frames+1):
             d_th = i*np.pi/(2*self.num_frames)
             if cw == 0:
                 d_th = - d_th
-            for c in cubes:
+            for c in cubelets:
                 try:
                     if c.z0 > 0:
                         angle = np.arccos((c.x0-1)/c.r) + d_th    
@@ -665,46 +664,46 @@ class Rubiks:
                 except: #happens when r = 0
                     pass
                 c.thy = d_th  
-            self.update_cube_positions()
+            self.update_cubelet_positions()
         #update colors and reset
         if cw == 1: #clockwise
-            for c in cubes:
+            for c in cubelets:
                 temp = c.colors['right']
                 c.colors['right'] = c.colors['bottom']
                 c.colors['bottom'] = c.colors['left']
                 c.colors['left'] = c.colors['top']
                 c.colors['top'] = temp
             #corners
-            temp = self.cubes[25].colors
-            self.cubes[25].colors = self.cubes[19].colors
-            self.cubes[19].colors = self.cubes[17].colors
-            self.cubes[17].colors = self.cubes[23].colors
-            self.cubes[23].colors = temp
+            temp = self.cubelets[25].colors
+            self.cubelets[25].colors = self.cubelets[19].colors
+            self.cubelets[19].colors = self.cubelets[17].colors
+            self.cubelets[17].colors = self.cubelets[23].colors
+            self.cubelets[23].colors = temp
             #edges
-            temp = self.cubes[22].colors
-            self.cubes[22].colors = self.cubes[18].colors
-            self.cubes[18].colors = self.cubes[20].colors
-            self.cubes[20].colors = self.cubes[24].colors
-            self.cubes[24].colors = temp
+            temp = self.cubelets[22].colors
+            self.cubelets[22].colors = self.cubelets[18].colors
+            self.cubelets[18].colors = self.cubelets[20].colors
+            self.cubelets[20].colors = self.cubelets[24].colors
+            self.cubelets[24].colors = temp
         else: #counter-clockwise
-            for c in cubes:
+            for c in cubelets:
                 temp = c.colors['right']
                 c.colors['right'] = c.colors['top']
                 c.colors['top'] = c.colors['left']
                 c.colors['left'] = c.colors['bottom']
                 c.colors['bottom'] = temp
             #corners
-            temp = self.cubes[25].colors
-            self.cubes[25].colors = self.cubes[23].colors
-            self.cubes[23].colors = self.cubes[17].colors
-            self.cubes[17].colors = self.cubes[19].colors
-            self.cubes[19].colors = temp
+            temp = self.cubelets[25].colors
+            self.cubelets[25].colors = self.cubelets[23].colors
+            self.cubelets[23].colors = self.cubelets[17].colors
+            self.cubelets[17].colors = self.cubelets[19].colors
+            self.cubelets[19].colors = temp
             #edges
-            temp = self.cubes[22].colors
-            self.cubes[22].colors = self.cubes[24].colors
-            self.cubes[24].colors = self.cubes[20].colors
-            self.cubes[20].colors = self.cubes[18].colors
-            self.cubes[18].colors = temp
+            temp = self.cubelets[22].colors
+            self.cubelets[22].colors = self.cubelets[24].colors
+            self.cubelets[24].colors = self.cubelets[20].colors
+            self.cubelets[20].colors = self.cubelets[18].colors
+            self.cubelets[18].colors = temp
         self.reset()
         self.busy = 0
 
@@ -841,11 +840,11 @@ class Rubiks:
     #         while not self.q.empty():
     #             self.q.get()()
 
-    # reset colors for all the small cubes
+    # reset colors for all the small cubelets
     def reset_all(self):
-        for c in self.cubes:
+        for c in self.cubelets:
             c.colors = {'front': 'b', 'back': 'g', 'left': 'orange', 'right': 'r', 'top': 'y', 'bottom': 'w'}
-        self.update_cube_positions()
+        self.update_cubelet_positions()
 
     #generate 25 random moves
     def randomize(self):
@@ -878,8 +877,8 @@ class Rubiks:
     # def solve(self):
             
 #display the cube
-r = Rubiks()
-r.update_cube_positions()
+r = Cube()
+r.update_cubelet_positions()
 
 #block program from ending
 plt.show()
