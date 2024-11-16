@@ -216,7 +216,7 @@ class Cube:
         
 class Rubiks:
     def __init__(self):
-        self.num_frames = 10 #frames per face rotation
+        self.num_frames = 6 #frames per face rotation
         self.fig = plt.figure()
         self.ax = Axes3D(self.fig, auto_add_to_figure=False)
         self.fig.add_axes(self.ax)
@@ -266,15 +266,18 @@ class Rubiks:
         self.button_ax_DP = plt.axes([0.5, 0, 0.1, 0.075])
         self.bDP = Button(self.button_ax_DP, 'D\'')
         self.bDP.on_clicked(self.DP_button)
-        self.button_ax_rand = plt.axes([0.8, 0, 0.2, 0.075])
-        self.brand = Button(self.button_ax_rand, 'Randomize')
-        self.brand.on_clicked(self.randomize_button)
-        self.button_ax_reset = plt.axes([0.8, 0.075, 0.2, 0.075])
+        self.button_ax_reset = plt.axes([0, 0.925, 0.2, 0.075])
         self.breset = Button(self.button_ax_reset, 'Reset')
         self.breset.on_clicked(self.reset_button)
-        self.button_ax_super = plt.axes([0.8, 0.15, 0.2, 0.075])
+        self.button_ax_rand = plt.axes([0.2, 0.925, 0.2, 0.075])
+        self.brand = Button(self.button_ax_rand, 'Randomize')
+        self.brand.on_clicked(self.randomize_button)
+        self.button_ax_super = plt.axes([0.4, 0.925, 0.2, 0.075])
         self.bsuper = Button(self.button_ax_super, 'Superflip')
         self.bsuper.on_clicked(self.super_button)
+        self.button_ax_solve = plt.axes([0.6, 0.925, 0.2, 0.075])
+        self.bsolve = Button(self.button_ax_solve, 'Solve')
+        self.bsolve.on_clicked(self.solve_button)
         #button queue:
         self.busy = 0
         self.q = queue.Queue()
@@ -813,14 +816,15 @@ class Rubiks:
             while not self.q.empty():
                 self.q.get()()
 
+    def reset_button(self, event=None):
+        self.q = queue.Queue()  # clear the queue
+        if self.busy:
+            self.q.put(self.reset_all)
+        else:
+            self.reset_all()
+
     def randomize_button(self, event=None):
         self.q.put(self.randomize)
-        if not self.busy:
-            while not self.q.empty():
-                self.q.get()()
-
-    def reset_button(self, event=None):
-        self.q.put(self.reset_all)
         if not self.busy:
             while not self.q.empty():
                 self.q.get()()
@@ -830,6 +834,18 @@ class Rubiks:
         if not self.busy:
             while not self.q.empty():
                 self.q.get()()
+
+    def solve_button(self, event=None):
+        self.q.put(self.solve)
+        if not self.busy:
+            while not self.q.empty():
+                self.q.get()()
+
+    # reset colors for all the small cubes
+    def reset_all(self):
+        for c in self.cubes:
+            c.colors = {'front': 'b', 'back': 'g', 'left': 'orange', 'right': 'r', 'top': 'y', 'bottom': 'w'}
+        self.update_cube_positions()
 
     #generate 25 random moves
     def randomize(self):
@@ -850,11 +866,7 @@ class Rubiks:
         for i in range(25):
             move_dict[np.random.randint(1, 13)]()
 
-    #reset colors for all the small cubes
-    def reset_all(self):
-        for c in self.cubes:
-            c.colors = {'front': 'b', 'back': 'g', 'left': 'orange', 'right': 'r', 'top': 'y', 'bottom': 'w'}
-        self.update_cube_positions()
+
 
     #if cube starts in solved position, this brings it to the "superflip" position
     def super(self):
@@ -862,6 +874,9 @@ class Rubiks:
         r.U(); r.R(); r.R(); r.F(); r.B(); r.R(); r.B(); r.B(); r.R()
         r.U(); r.U(); r.L(); r.B(); r.B(); r.R(); r.UP(); r.DP(); r.R()
         r.R(); r.F(); r.RP(); r.L(); r.B(); r.B(); r.U(); r.U(); r.F(); r.F()
+
+    def solve(self):
+        print("todo")
             
 #display the cube
 r = Rubiks()
